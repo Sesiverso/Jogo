@@ -1,78 +1,58 @@
-// Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyBCiQrrtx-69rppeMRY07PZokkatjNd3rI",
     authDomain: "jogo-bae80.firebaseapp.com",
-    databaseURL: "https://jogo-bae80-default-rtdb.firebaseio.com",
+    databaseURL: "https://jogo-bae80-default-rtdb.firebaseio.com/",
     projectId: "jogo-bae80",
     storageBucket: "jogo-bae80.firebasestorage.app",
     messagingSenderId: "799584591971",
-    appId: "1:799584591971:web:4c6026c9430ffdc724d856",
-    measurementId: "G-1MJ1SHWYLX"
+    appId: "1:799584591971:web:4c6026c9430ffdc724d856"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Criar uma nova partida
-function criarPartida() {
-    let partidaID = Date.now().toString();
-    db.ref("partidas/" + partidaID).set({ jogador1: "Aguardando", jogador2: "Aguardando" });
+// Criar uma nova sala
+function confirmarSala() {
+    let nomeSala = document.getElementById("nomeSala").value;
+    let nomeUsuario = document.getElementById("nomeUsuario").value;
+
+    if (!nomeSala || !nomeUsuario) return alert("Preencha todos os campos!");
+
+    let ref = db.ref("salas/" + nomeSala);
+    ref.set({ jogador1: nomeUsuario, jogador2: "" }).then(() => {
+        window.location.href = `jogo.html?sala=${nomeSala}`;
+    });
 }
 
-// Listar partidas ativas
-function listarPartidas() {
-    const lista = document.getElementById("partidas");
+// Listar salas disponíveis
+function listarSalas() {
+    const lista = document.getElementById("listaSalas");
     if (!lista) return;
-    
+
     lista.innerHTML = "";
-    db.ref("partidas").on("value", snapshot => {
-        snapshot.forEach(partida => {
-            let partidaID = partida.key;
-            let dados = partida.val();
-            let li = document.createElement("li");
-            li.innerHTML = `Partida ${partidaID} - Jogadores: ${dados.jogador1}, ${dados.jogador2} 
-                            <button onclick="entrarPartida('${partidaID}')">Entrar</button>`;
-            lista.appendChild(li);
-        });
-    });
-}
-
-// Entrar em uma partida
-function entrarPartida(partidaID) {
-    let ref = db.ref("partidas/" + partidaID);
-    ref.once("value").then(snapshot => {
-        let partida = snapshot.val();
-        if (partida.jogador1 === "Aguardando") {
-            ref.update({ jogador1: "Jogador 1" });
-        } else if (partida.jogador2 === "Aguardando") {
-            ref.update({ jogador2: "Jogador 2" }).then(() => {
-                window.location.href = `jogo.html?partida=${partidaID}`;
-            });
-        }
-    });
-}
-
-// Monitorar o status da partida no jogo.html
-function monitorarPartida() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const partidaID = urlParams.get("partida");
-    const statusEl = document.getElementById("status");
-    
-    if (partidaID && statusEl) {
-        db.ref("partidas/" + partidaID).on("value", snapshot => {
-            let partida = snapshot.val();
-            if (partida.jogador1 !== "Aguardando" && partida.jogador2 !== "Aguardando") {
-                statusEl.innerText = "O jogo começou!";
+    db.ref("salas").on("value", snapshot => {
+        snapshot.forEach(sala => {
+            let nome = sala.key;
+            let dados = sala.val();
+            if (dados.jogador2 === "") {
+                let li = document.createElement("li");
+                li.innerHTML = `${nome} <button onclick="entrarSala('${nome}')">Entrar</button>`;
+                lista.appendChild(li);
             }
         });
-    }
+    });
 }
 
-// Voltar ao menu principal
-function voltarMenu() {
-    window.location.href = "index.html";
+// Entrar em uma sala
+function entrarSala(nomeSala) {
+    let nomeUsuario = prompt("Digite seu nome:");
+    if (!nomeUsuario) return;
+
+    let ref = db.ref("salas/" + nomeSala);
+    ref.update({ jogador2: nomeUsuario }).then(() => {
+        window.location.href = `jogo.html?sala=${nomeSala}`;
+    });
 }
 
-// Atualizar lista de partidas no index.html
-listarPartidas();
-monitorarPartida();
+// Monitorar o jogo e remover sala após saída
+listarSalas();
