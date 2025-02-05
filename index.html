@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cara a Cara Online</title>
+    <title>Cara a Cara - Menu</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Cara a Cara Online</h1>
-        <button class="btn" onclick="criarPartida()">Criar Partida</button>
-        <h2>Partidas Ativas</h2>
-        <ul id="partidas"></ul>
+        <button class="btn" onclick="criarSala()">Criar Sala</button>
+        <button class="btn" onclick="verSalas()">Ver Salas Disponíveis</button>
     </div>
-    <script src="script.js"></script>
+    <script>
+        function criarSala() {
+            window.location.href = "sala.html";
+        }
+        function verSalas() {
+            window.location.href = "lista.html";
+        }
+    </script>
 </body>
 </html>
